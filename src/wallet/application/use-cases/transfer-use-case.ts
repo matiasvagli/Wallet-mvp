@@ -1,9 +1,13 @@
-import { WalletRepository } from '../../domain/repositories/wallet.repository';
+import type { WalletRepository } from '../../domain/repositories/wallet.repository';
+import { Inject } from '@nestjs/common';
+import { WALLET_REPOSITORY } from '../../domain/repositories/wallet-repository.token';
 import { Wallet } from '../../domain/entities/wallet.entity';
+import { WalletId } from '../../domain/value-objects/wallet-id';
 
 
 export class TransferUseCase {
   constructor(
+    @Inject(WALLET_REPOSITORY)
     private readonly walletRepository: WalletRepository,
   ) {}
 
@@ -12,8 +16,12 @@ export class TransferUseCase {
     toWalletId: string,
     amount: number,
   ): Promise<{ fromWallet: Wallet; toWallet: Wallet }> {
-    const fromWallet = await this.walletRepository.findById(fromWalletId);
-    const toWallet = await this.walletRepository.findById(toWalletId);
+    const fromWallet = await this.walletRepository.findById(
+      WalletId.create(fromWalletId),
+    );
+    const toWallet = await this.walletRepository.findById(
+      WalletId.create(toWalletId),
+    );
 
     if (!fromWallet) {
       throw new Error('Source wallet not found');

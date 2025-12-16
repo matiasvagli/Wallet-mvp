@@ -2,9 +2,9 @@ import { CreateWalletUseCase } from '../create-wallet.use-case';
 import { InMemoryWalletRepository } from '../../../infrastructure/persistence/in-memory-wallet.repository';
 import { WalletType } from '../../../domain/value-objects/wallet-type';
 
-const UUID_STD_1 = '550e8400-e29b-41d4-a716-446655440010';
-const UUID_STD_2 = '550e8400-e29b-41d4-a716-446655440011';
-const UUID_TEEN_1 = '550e8400-e29b-41d4-a716-446655440012';
+const UUID_STD_1 = '550e8400-e29b-41d4-a716-446655440050';
+const UUID_STD_2 = '550e8400-e29b-41d4-a716-446655440051';
+const UUID_TEEN_1 = '550e8400-e29b-41d4-a716-446655440052';
 
 describe('CreateWalletUseCase', () => {
   it('should create and store a standard wallet', async () => {
@@ -38,7 +38,7 @@ describe('CreateWalletUseCase', () => {
     expect(storedWallet).toBeNull();
   });
 
-  it('should reject creating TEEN without existing STANDARD', async () => {
+  it('should reject creating TEEN wallet without existing STANDARD', async () => {
     const walletRepository = new InMemoryWalletRepository();
     const createWalletUseCase = new CreateWalletUseCase(walletRepository);
 
@@ -48,14 +48,14 @@ describe('CreateWalletUseCase', () => {
         currency: 'ARS',
         initialBalance: 150,
         type: WalletType.TEEN,
-        parentWalletId: '550e8400-e29b-41d4-a716-446655440099',
+        parentWalletId: '550e8400-e29b-41d4-a716-446655440089',
         perTransactionLimit: 100,
-        whitelistedWalletIds: ['550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440021'],
+        whitelistedWalletIds: ['550e8400-e29b-41d4-a716-446655440060', '550e8400-e29b-41d4-a716-446655440061'],
       })
     ).rejects.toThrow('Parent wallet does not exist');
   });
 
-  it('should create TEEN when STANDARD exists', async () => {
+  it('should create TEEN wallet when STANDARD exists', async () => {
     const walletRepository = new InMemoryWalletRepository();
     const createWalletUseCase = new CreateWalletUseCase(walletRepository);
 
@@ -67,15 +67,15 @@ describe('CreateWalletUseCase', () => {
       type: WalletType.STANDARD,
     });
 
-    // Luego crear TEEN
+    // Luego crear TEEN con ID diferente
     const teenWallet = await createWalletUseCase.execute({
       id: UUID_TEEN_1,
       currency: 'ARS',
       initialBalance: 150,
       type: WalletType.TEEN,
-      parentWalletId: UUID_STD_1,
+      parentWalletId: UUID_STD_1, // referencia al STANDARD
       perTransactionLimit: 100,
-      whitelistedWalletIds: ['550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440021'],
+      whitelistedWalletIds: ['550e8400-e29b-41d4-a716-446655440060', '550e8400-e29b-41d4-a716-446655440061'],
     });
 
     expect(teenWallet.getId()).toBe(UUID_TEEN_1);

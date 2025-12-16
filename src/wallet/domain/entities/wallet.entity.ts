@@ -1,4 +1,6 @@
 import { WalletType } from '../value-objects/wallet-type';
+import { WalletId } from '../value-objects/wallet-id';
+
 type TeenRules = {
   parentWalletId: string;
   perTransactionLimit: number;
@@ -14,9 +16,11 @@ type WalletProps = {
 };
 
 export class Wallet {
+  private readonly id: WalletId;
+  private readonly currency: string;
   private balance: number;
   private readonly type: WalletType;
-  private readonly parentWalletId?: string;
+  private readonly parentWalletId?: WalletId;
   private readonly perTransactionLimit?: number;
   private readonly whitelistedWalletIds: Set<string>;
 
@@ -33,31 +37,30 @@ export class Wallet {
       throw new Error('Initial balance cannot be negative');
     }
 
+    this.id = WalletId.create(id);
+    this.currency = currency;
+    this.type = type;
+    this.balance = initialBalance;
+
     if (type === WalletType.TEEN) {
       if (!teenRules) {
         throw new Error('Teen wallet requires teen rules');
       }
+
       if (teenRules.perTransactionLimit <= 0) {
         throw new Error('Transaction limit must be positive');
       }
-      this.parentWalletId = teenRules.parentWalletId;
+
+      this.parentWalletId = WalletId.create(teenRules.parentWalletId);
       this.perTransactionLimit = teenRules.perTransactionLimit;
       this.whitelistedWalletIds = new Set(teenRules.whitelistedWalletIds ?? []);
     } else {
       this.whitelistedWalletIds = new Set();
     }
-
-    this.id = id;
-    this.currency = currency;
-    this.type = type;
-    this.balance = initialBalance;
   }
 
-  private readonly id: string;
-  private readonly currency: string;
-
   getId(): string {
-    return this.id;
+    return this.id.value;
   }
 
   getCurrency(): string {
@@ -73,7 +76,7 @@ export class Wallet {
   }
 
   getParentWalletId(): string | undefined {
-    return this.parentWalletId;
+    return this.parentWalletId?.value;
   }
 
  
