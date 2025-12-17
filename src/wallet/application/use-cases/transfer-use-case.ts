@@ -3,7 +3,7 @@ import { Inject } from '@nestjs/common';
 import { WALLET_REPOSITORY } from '../../domain/repositories/wallet-repository.token';
 import { Wallet } from '../../domain/entities/wallet.entity';
 import { WalletId } from '../../domain/value-objects/wallet-id';
-
+import { Money } from '../../domain/value-objects/money';
 
 export class TransferUseCase {
   constructor(
@@ -14,7 +14,7 @@ export class TransferUseCase {
   async execute(
     fromWalletId: string,
     toWalletId: string,
-    amount: number,
+    amount: Money,
   ): Promise<{ fromWallet: Wallet; toWallet: Wallet }> {
     const fromWallet = await this.walletRepository.findById(
       WalletId.create(fromWalletId),

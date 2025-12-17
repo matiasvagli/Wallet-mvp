@@ -3,6 +3,7 @@ import { Inject } from '@nestjs/common';
 import { WALLET_REPOSITORY } from '../../domain/repositories/wallet-repository.token';
 import { Wallet } from '../../domain/entities/wallet.entity';
 import { WalletId } from '../../domain/value-objects/wallet-id';
+import { Money } from 'src/wallet/domain/value-objects/money';
 
 
 export class WithdrawUseCase {
@@ -11,7 +12,7 @@ export class WithdrawUseCase {
     private readonly walletRepository: WalletRepository,
   ) {}
 
-  async execute(walletId: string, amount: number): Promise<Wallet> {
+  async execute(walletId: string, amount: Money): Promise<Wallet> {
     const wallet = await this.walletRepository.findById(
       WalletId.create(walletId),
     );

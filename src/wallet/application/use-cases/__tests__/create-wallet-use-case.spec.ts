@@ -1,10 +1,13 @@
 import { CreateWalletUseCase } from '../create-wallet.use-case';
 import { InMemoryWalletRepository } from '../../../infrastructure/persistence/in-memory-wallet.repository';
 import { WalletType } from '../../../domain/value-objects/wallet-type';
+import { Money } from '../../../domain/value-objects/money';
+import { Currency } from '../../../domain/value-objects/currency';
 
 const UUID_STD_1 = '550e8400-e29b-41d4-a716-446655440010';
 const UUID_STD_2 = '550e8400-e29b-41d4-a716-446655440011';
 const UUID_TEEN_1 = '550e8400-e29b-41d4-a716-446655440012';
+const ARS = Currency.create('ARS');
 
 describe('CreateWalletUseCase', () => {
   it('should create and store a standard wallet', async () => {
@@ -13,13 +16,13 @@ describe('CreateWalletUseCase', () => {
 
     const wallet = await createWalletUseCase.execute({
       id: UUID_STD_1,
-      currency: 'ARS',
-      initialBalance: 100,
+      currency: ARS,
+      initialBalance: new Money(100),
     });
 
     expect(wallet.getId()).toBe(UUID_STD_1);
     expect(wallet.getType()).toBe(WalletType.STANDARD);
-    expect(wallet.getBalance()).toBe(100);
+    expect(wallet.getBalance().value).toBe(100);
 
     const storedWallet = await walletRepository.findById(UUID_STD_1);
     expect(storedWallet).not.toBeNull();
@@ -30,52 +33,52 @@ describe('CreateWalletUseCase', () => {
     const walletRepository = new InMemoryWalletRepository();
     const createWalletUseCase = new CreateWalletUseCase(walletRepository);
 
-    await expect(
-      createWalletUseCase.execute({ id: UUID_STD_2, currency: 'ARS', initialBalance: -10 }),
-    ).rejects.toThrow();
+    expect(() => {
+      createWalletUseCase.execute({ id: UUID_STD_2, currency: ARS, initialBalance: new Money(-10) });
+    }).toThrow();
 
     const storedWallet = await walletRepository.findById(UUID_STD_2);
     expect(storedWallet).toBeNull();
   });
 
-  it('should reject creating TEEN without existing STANDARD', async () => {
+  it('should reject creating TEEN wallet without existing STANDARD', async () => {
     const walletRepository = new InMemoryWalletRepository();
     const createWalletUseCase = new CreateWalletUseCase(walletRepository);
 
     await expect(
       createWalletUseCase.execute({
         id: UUID_TEEN_1,
-        currency: 'ARS',
-        initialBalance: 150,
+        currency: ARS,
+        initialBalance: new Money(150),
         type: WalletType.TEEN,
-        parentWalletId: '550e8400-e29b-41d4-a716-446655440099',
-        perTransactionLimit: 100,
-        whitelistedWalletIds: ['550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440021'],
+        parentWalletId: '550e8400-e29b-41d4-a716-446655440089',
+        perTransactionLimit: new Money(100),
+        whitelistedWalletIds: ['550e8400-e29b-41d4-a716-446655440060', '550e8400-e29b-41d4-a716-446655440061'],
       })
     ).rejects.toThrow('Parent wallet does not exist');
   });
 
-  it('should create TEEN when STANDARD exists', async () => {
+  it('should create TEEN wallet when STANDARD exists', async () => {
     const walletRepository = new InMemoryWalletRepository();
     const createWalletUseCase = new CreateWalletUseCase(walletRepository);
 
     // Primero crear STANDARD
     await createWalletUseCase.execute({
       id: UUID_STD_1,
-      currency: 'ARS',
-      initialBalance: 100,
+      currency: ARS,
+      initialBalance: new Money(100),
       type: WalletType.STANDARD,
     });
 
-    // Luego crear TEEN
+    // Luego crear TEEN con ID diferente
     const teenWallet = await createWalletUseCase.execute({
       id: UUID_TEEN_1,
-      currency: 'ARS',
-      initialBalance: 150,
+      currency: ARS,
+      initialBalance: new Money(150),
       type: WalletType.TEEN,
-      parentWalletId: UUID_STD_1,
-      perTransactionLimit: 100,
-      whitelistedWalletIds: ['550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440021'],
+      parentWalletId: UUID_STD_1, // referencia al STANDARD
+      perTransactionLimit: new Money(100),
+      whitelistedWalletIds: ['550e8400-e29b-41d4-a716-446655440060', '550e8400-e29b-41d4-a716-446655440061'],
     });
 
     expect(teenWallet.getId()).toBe(UUID_TEEN_1);

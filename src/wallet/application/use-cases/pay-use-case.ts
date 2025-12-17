@@ -1,3 +1,4 @@
+import { Money } from 'src/wallet/domain/value-objects/money';
 import { Wallet } from '../../domain/entities/wallet.entity';
 import { WalletRepository } from '../../domain/repositories/wallet.repository';
 import { WalletId } from '../../domain/value-objects/wallet-id';
@@ -10,7 +11,7 @@ export class PayUseCase {
 
   async execute(
     walletId: string,
-    amount: number,
+    amount: Money,
     targetWalletId?: string,
   ): Promise<Wallet> {
     const wallet = await this.walletRepository.findById(
