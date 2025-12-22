@@ -47,6 +47,16 @@ export class User {
         return this.birthDate;
 
     }
+
+    getAge(referenceDate: Date): number {
+        const today = referenceDate;
+        let age = today.getFullYear() - this.birthDate.getFullYear();
+        const monthDiff = today.getMonth() - this.birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < this.birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    }
     
     changeName(firstName: string, lastName: string): void {
         this.ensureValidName(firstName, 'First name');
@@ -56,13 +66,8 @@ export class User {
     }
 
     
-    isTeen(): boolean {
-        const today = new Date();
-        const age = today.getFullYear() - this.birthDate.getFullYear();
-        const monthDiff = today.getMonth() - this.birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < this.birthDate.getDate())) {
-            return age - 1 >= 13 && age - 1 < 18;
-        }
+    isTeen(referenceDate: Date=new Date()): boolean {
+        const age = this.getAge(referenceDate);
         return age >= 13 && age < 18;
     }
 

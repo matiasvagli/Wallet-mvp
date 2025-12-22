@@ -17,6 +17,20 @@ type WalletProps = {
   teenRules?: TeenRules;
 };
 
+/**
+ * Entidad principal del agregado Wallet que encapsula el comportamiento de una billetera digital.
+ *
+ * Responsabilidades:
+ * - Mantener la integridad de los datos de la wallet (balance, tipo, reglas)
+ * - Aplicar reglas de negocio específicas (límites de transacción para TEEN wallets)
+ * - Validar operaciones según el tipo de wallet
+ * - Garantizar invariantes del dominio (balance no negativo, reglas TEEN)
+ *
+ * NO hace:
+ * - Persistir datos (responsabilidad de repositorios)
+ * - Validar existencia de otras wallets (responsabilidad de use cases)
+ * - Manejar transacciones entre sistemas externos
+ */
 export class Wallet {
   private readonly id: WalletId;
   private readonly currency: Currency;
@@ -120,7 +134,22 @@ export class Wallet {
     this.balance = this.balance.subtract(amount);
   }
 
+   canAutoUpgradeGivenAge(age : number): boolean {
+    return this.type === WalletType.TEEN && age >= 18;
+  }
+  
+  autoUpgrade(): Wallet {
+    if (this.type !== WalletType.TEEN) {
+      throw new Error('Only teen wallets can be upgraded');
+    }
 
+    return new Wallet({
+      id: this.id.value,
+      currency: this.currency,
+      initialBalance: this.balance,
+      type: WalletType.STANDARD,
+    });
+  }
 
   private ensureSpendAllowed(
   amount: Money,
@@ -150,6 +179,8 @@ export class Wallet {
 
   if (this.type === WalletType.STANDARD && operation === 'pay') {
     throw new Error('Pay operation only available for teen wallets');
+
   }
-} 
-}
+
+ 
+} } 

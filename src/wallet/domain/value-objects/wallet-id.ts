@@ -1,5 +1,19 @@
 import { randomUUID } from 'crypto';
 
+/**
+ * Value Object que representa el identificador único de una Wallet.
+ *
+ * Responsabilidades:
+ * - Garantizar identificadores únicos y válidos (formato UUID)
+ * - Validar formato de identificadores
+ * - Generar nuevos identificadores únicos
+ * - Proveer type safety para IDs de wallet
+ *
+ * NO hace:
+ * - Verificar existencia en base de datos (responsabilidad de repositorios)
+ * - Manejar lógica de negocio específica
+ * - Almacenar metadatos adicionales
+ */
 export class WalletId {
   private constructor(private readonly _value: string) {}
 
