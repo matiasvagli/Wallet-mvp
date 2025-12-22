@@ -1,6 +1,7 @@
 import { LoginUseCase } from '../login-use-case';
 import { InMemoryAuthUserRepository } from '../../../infrastructure/persistence/in-memory-auth.repository';
 import { FakePasswordHasher } from '../../../infrastructure/security/fake-password-hasher';
+import { FakeTokenService } from '../../../infrastructure/security/fake-token-service';
 import { AuthUser } from '../../../domain/entities/auth-user.entity';
 import { UserId } from '../../../../user/domain/value-objects/user-id';
 
@@ -8,7 +9,8 @@ describe('LoginUseCase', () => {
   it('should login with valid email and password', async () => {
     const repo = new InMemoryAuthUserRepository();
     const hasher = new FakePasswordHasher();
-    const useCase = new LoginUseCase(repo, hasher);
+    const tokenService = new FakeTokenService();
+    const useCase = new LoginUseCase(repo, hasher, tokenService);
 
     // Pre-save a user
     const user = new AuthUser({
@@ -23,13 +25,15 @@ describe('LoginUseCase', () => {
       password: 'password123',
     });
 
-    expect(result.getEmail()).toBe('test@test.com');
+    expect(result.userId).toBeDefined();
+    expect(result.token).toBeDefined();
   });
 
   it('should throw error with invalid password', async () => {
     const repo = new InMemoryAuthUserRepository();
     const hasher = new FakePasswordHasher();
-    const useCase = new LoginUseCase(repo, hasher);
+    const tokenService = new FakeTokenService();
+    const useCase = new LoginUseCase(repo, hasher, tokenService);
 
     // Pre-save a user
     const user = new AuthUser({
@@ -50,7 +54,8 @@ describe('LoginUseCase', () => {
   it('should throw error with invalid email', async () => {
     const repo = new InMemoryAuthUserRepository();
     const hasher = new FakePasswordHasher();
-    const useCase = new LoginUseCase(repo, hasher);
+    const tokenService = new FakeTokenService();
+    const useCase = new LoginUseCase(repo, hasher, tokenService);
 
     await expect(
       useCase.execute({

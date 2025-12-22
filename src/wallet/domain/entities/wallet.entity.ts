@@ -6,7 +6,6 @@ import { Money } from '../value-objects/money';
 type TeenRules = {
   parentWalletId: string;
   perTransactionLimit?: Money;
-  whitelistedWalletIds?: string[];
 };
 
 type WalletProps = {
@@ -38,7 +37,6 @@ export class Wallet {
   private readonly type: WalletType;
   private readonly parentWalletId?: WalletId;
   private readonly perTransactionLimit?: Money;
-  private readonly whitelistedWalletIds: Set<string>;
 
   constructor(props: WalletProps) {
     const {
@@ -70,9 +68,6 @@ export class Wallet {
 
       this.parentWalletId = WalletId.create(teenRules.parentWalletId);
       this.perTransactionLimit = teenRules.perTransactionLimit;
-      this.whitelistedWalletIds = new Set(teenRules.whitelistedWalletIds ?? []);
-    } else {
-      this.whitelistedWalletIds = new Set();
     }
   }
 
@@ -111,29 +106,6 @@ export class Wallet {
     this.balance = this.balance.subtract(amount);
   }
 
-  transfer(amount: Money, targetWallet: Wallet): void {
-    if (amount.isZeroOrNegative()) {
-      throw new Error('Transfer amount must be positive');
-    }
-    if (this.currency !== targetWallet.getCurrency()) {
-      throw new Error('Currency mismatch between wallets');
-    }
-    this.ensureSpendAllowed(amount, WalletId.create(targetWallet.getId()), 'transfer');
-
-    this.balance = this.balance.subtract(amount);
-    targetWallet.deposit(amount);
-  }
-
-  pay(amount: Money, targetWalletId?: string): void {
-    if (amount.isZeroOrNegative()) {
-      throw new Error('Payment amount must be positive');
-    }
-
-    const walletIdObj = targetWalletId ? WalletId.create(targetWalletId) : undefined;
-    this.ensureSpendAllowed(amount, walletIdObj, 'pay');
-    this.balance = this.balance.subtract(amount);
-  }
-
    canAutoUpgradeGivenAge(age : number): boolean {
     return this.type === WalletType.TEEN && age >= 18;
   }
@@ -151,36 +123,17 @@ export class Wallet {
     });
   }
 
-  private ensureSpendAllowed(
-  amount: Money,
-  targetWalletId?: WalletId,
-  operation: 'withdraw' | 'transfer' | 'pay' = 'withdraw',
-): void {
-  if (amount.isGreaterThan(this.balance)) {
-    throw new Error('Insufficient funds');
-  }
-
-  if (this.type === WalletType.TEEN) {
-    if (
-      this.perTransactionLimit &&
-      amount.isGreaterThan(this.perTransactionLimit)
-    ) {
-      throw new Error('Amount exceeds per transaction limit');
+  private ensureSpendAllowed(amount: Money): void {
+    if (amount.isGreaterThan(this.balance)) {
+      throw new Error('Insufficient funds');
     }
 
-    if (
-      targetWalletId &&
-      this.whitelistedWalletIds.size > 0 &&
-      !this.whitelistedWalletIds.has(targetWalletId.value)
-    ) {
-      throw new Error('Target wallet is not whitelisted');
+    if (this.type === WalletType.TEEN) {
+      if (
+        this.perTransactionLimit &&
+        amount.isGreaterThan(this.perTransactionLimit)
+      ) {
+        throw new Error('Amount exceeds per transaction limit');
+      }
     }
-  }
-
-  if (this.type === WalletType.STANDARD && operation === 'pay') {
-    throw new Error('Pay operation only available for teen wallets');
-
-  }
-
- 
-} } 
+  } } 

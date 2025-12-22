@@ -1,25 +1,22 @@
-import { Inject } from '@nestjs/common';
 import type { AuthUserRepository } from '../../domain/repositories/auth-repository';
-import { AUTH_REPOSITORY } from '../../domain/repositories/auth-repository.token';
-import { AuthUser } from '../../domain/entities/auth-user.entity';
 import type { PasswordHasher } from '../../domain/services/password-hasher';
-
+import type { TokenService } from '../../domain/services/token-service';
 
 type LoginInput = {
-    email: string;
-    password: string;
+  email: string;
+  password: string;
 };
 
 export class LoginUseCase {
   constructor(
-    @Inject(AUTH_REPOSITORY)
     private readonly authUserRepository: AuthUserRepository,
-
-    private readonly passwordHasher: PasswordHasher, 
+    private readonly passwordHasher: PasswordHasher,
+    private readonly tokenService: TokenService,
   ) {}
 
-  // hay que cambiar la promesa para que devuelva un token o algo asi a futuro
-  async execute(input: LoginInput): Promise<AuthUser> {
+  async execute(
+    input: LoginInput,
+  ): Promise<{ userId: string; token: string }> {
     const user = await this.authUserRepository.findByEmail(input.email);
     if (!user) {
       throw new Error('Invalid email or password');
@@ -34,6 +31,12 @@ export class LoginUseCase {
       throw new Error('Invalid email or password');
     }
 
-    return user;
+    const userId = user.getUserId().value;
+    const token = await this.tokenService.generate(userId);
+
+    return {
+      userId,
+      token,
+    };
   }
 }

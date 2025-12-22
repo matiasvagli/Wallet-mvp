@@ -3,6 +3,8 @@ import { Body, Controller, Patch, Post } from '@nestjs/common';
 
 import { CreateWalletUseCase } from '../../application/use-cases/create-wallet.use-case';
 import { WalletType } from '../../domain/value-objects/wallet-type';
+import { Currency } from '../../domain/value-objects/currency';
+import { Money } from '../../domain/value-objects/money';
 
 
 type CreateWalletRequest = {
@@ -16,7 +18,6 @@ type CreateWalletRequest = {
   // solo TEEN
   parentWalletId?: string;
   perTransactionLimit?: number;
-  whitelistedWalletIds?: string[];
 };
 
 @Controller('wallets')
@@ -29,12 +30,11 @@ export class WalletController {
   async create(@Body() body: CreateWalletRequest) {
     const wallet = await this.createWalletUseCase.execute({
       id: body.id,
-      currency: body.currency,
-      initialBalance: body.initialBalance,
+      currency: Currency.create(body.currency),
+      initialBalance: body.initialBalance ? new Money(body.initialBalance) : undefined,
       type: body.type,
       parentWalletId: body.parentWalletId,
-      perTransactionLimit: body.perTransactionLimit,
-      whitelistedWalletIds: body.whitelistedWalletIds,
+      perTransactionLimit: body.perTransactionLimit ? new Money(body.perTransactionLimit) : undefined,
     });
 
     // Respuesta HTTP (no devolvemos reglas internas)

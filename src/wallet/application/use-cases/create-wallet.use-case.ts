@@ -74,7 +74,6 @@ export class CreateWalletUseCase {
           ? {
               parentWalletId: parentWalletId!,
               perTransactionLimit, // optional → unlimited if undefined
-              whitelistedWalletIds,
             }
           : undefined,
     });
