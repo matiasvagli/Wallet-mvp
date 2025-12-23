@@ -23,5 +23,6 @@ import { InMemoryUserRepository } from './infrastructure/persistence/in-memory-u
       useClass: InMemoryUserRepository,
     },
   ],
+  exports: [USER_REPOSITORY],
 })
 export class UserModule {}

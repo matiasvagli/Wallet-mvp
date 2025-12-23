@@ -1,6 +1,10 @@
+import { Inject } from '@nestjs/common';
 import type { AuthUserRepository } from '../../domain/repositories/auth-repository';
+import { AUTH_REPOSITORY } from '../../domain/repositories/auth-repository.token';
 import type { PasswordHasher } from '../../domain/services/password-hasher';
+import { PASSWORD_HASHER } from '../../domain/services/password-hasher.token';
 import type { TokenService } from '../../domain/services/token-service';
+import { TOKEN_SERVICE } from '../../domain/services/token-service.token';
 
 type LoginInput = {
   email: string;
@@ -9,8 +13,11 @@ type LoginInput = {
 
 export class LoginUseCase {
   constructor(
+    @Inject(AUTH_REPOSITORY)
     private readonly authUserRepository: AuthUserRepository,
+    @Inject(PASSWORD_HASHER)
     private readonly passwordHasher: PasswordHasher,
+    @Inject(TOKEN_SERVICE)
     private readonly tokenService: TokenService,
   ) {}
 

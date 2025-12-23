@@ -75,8 +75,7 @@ export class WalletController {
       walletId,
       userId,
       new Money(body.amount),
-      
-  );
+    );
   }
 
   // POST /wallets/:id/withdraw
