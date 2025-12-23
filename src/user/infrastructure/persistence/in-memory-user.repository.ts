@@ -9,9 +9,7 @@ export class InMemoryUserRepository implements UserRepository {
     this.users.set(user.getId().value, user);
   }
 
-  
-  async findById(id: string | UserId): Promise<User | null> {
-    const key = typeof id === 'string' ? id : id.value;
-    return this.users.get(key) ?? null;
+  async findById(id: UserId): Promise<User | null> {
+    return this.users.get(id.value) ?? null;
   }
 }

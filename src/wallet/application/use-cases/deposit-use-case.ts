@@ -5,7 +5,7 @@ import { Wallet } from '../../domain/entities/wallet.entity';
 import { WalletId } from '../../domain/value-objects/wallet-id';
 import { Money } from '../../domain/value-objects/money';
 import { UserId } from '../../../user/domain/value-objects/user-id';
-import { User } from 'src/user/domain/entities/user/user.entity';
+
 
 export class DepositUseCase {
   constructor(

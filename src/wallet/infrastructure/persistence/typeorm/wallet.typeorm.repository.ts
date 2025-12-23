@@ -5,7 +5,7 @@ import { Wallet } from '../../../domain/entities/wallet.entity';
 
 import { WalletOrmEntity } from './wallet.orm-entity';
 import { WalletMapper } from './wallet.mapper';
-import { UserId } from 'src/user/domain/value-objects/user-id';
+import { UserId } from '../../../../user/domain/value-objects/user-id';
 import { WalletId } from '../../../domain/value-objects/wallet-id';
 
 

@@ -32,7 +32,7 @@ export class LoginUseCase {
     }
 
     const userId = user.getUserId().value;
-    const token = await this.tokenService.generate(userId);
+    const token = await this.tokenService.sign(userId);
 
     return {
       userId,
