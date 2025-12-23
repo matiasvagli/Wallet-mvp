@@ -3,10 +3,12 @@ import { InMemoryWalletRepository } from '../../../infrastructure/persistence/in
 import { WalletType } from '../../../domain/value-objects/wallet-type';
 import { Money } from '../../../domain/value-objects/money';
 import { Currency } from '../../../domain/value-objects/currency';
+import { WalletId } from '../../../domain/value-objects/wallet-id';
 
 const UUID_STD_1 = '550e8400-e29b-41d4-a716-446655440010';
 const UUID_STD_2 = '550e8400-e29b-41d4-a716-446655440011';
 const UUID_TEEN_1 = '550e8400-e29b-41d4-a716-446655440012';
+const USER_ID = '550e8400-e29b-41d4-a716-446655440001';
 const ARS = Currency.create('ARS');
 
 describe('CreateWalletUseCase', () => {
@@ -15,6 +17,7 @@ describe('CreateWalletUseCase', () => {
     const createWalletUseCase = new CreateWalletUseCase(walletRepository);
 
     const wallet = await createWalletUseCase.execute({
+      userId: USER_ID,
       id: UUID_STD_1,
       currency: ARS,
       initialBalance: new Money(100),
@@ -24,7 +27,7 @@ describe('CreateWalletUseCase', () => {
     expect(wallet.getType()).toBe(WalletType.STANDARD);
     expect(wallet.getBalance().value).toBe(100);
 
-    const storedWallet = await walletRepository.findById(UUID_STD_1);
+    const storedWallet = await walletRepository.findById(WalletId.create(UUID_STD_1));
     expect(storedWallet).not.toBeNull();
     expect(storedWallet?.getType()).toBe(WalletType.STANDARD);
   });
@@ -34,10 +37,10 @@ describe('CreateWalletUseCase', () => {
     const createWalletUseCase = new CreateWalletUseCase(walletRepository);
 
     expect(() => {
-      createWalletUseCase.execute({ id: UUID_STD_2, currency: ARS, initialBalance: new Money(-10) });
+      createWalletUseCase.execute({ userId: USER_ID, id: UUID_STD_2, currency: ARS, initialBalance: new Money(-10) });
     }).toThrow();
 
-    const storedWallet = await walletRepository.findById(UUID_STD_2);
+    const storedWallet = await walletRepository.findById(WalletId.create(UUID_STD_2));
     expect(storedWallet).toBeNull();
   });
 
@@ -47,6 +50,7 @@ describe('CreateWalletUseCase', () => {
 
     await expect(
       createWalletUseCase.execute({
+        userId: USER_ID,
         id: UUID_TEEN_1,
         currency: ARS,
         initialBalance: new Money(150),
@@ -64,6 +68,7 @@ describe('CreateWalletUseCase', () => {
 
     // Primero crear STANDARD
     await createWalletUseCase.execute({
+      userId: USER_ID,
       id: UUID_STD_1,
       currency: ARS,
       initialBalance: new Money(100),
@@ -72,6 +77,7 @@ describe('CreateWalletUseCase', () => {
 
     // Luego crear TEEN con ID diferente
     const teenWallet = await createWalletUseCase.execute({
+      userId: USER_ID,
       id: UUID_TEEN_1,
       currency: ARS,
       initialBalance: new Money(150),

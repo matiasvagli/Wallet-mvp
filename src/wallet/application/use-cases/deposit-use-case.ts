@@ -4,12 +4,15 @@ import { WALLET_REPOSITORY } from '../../domain/repositories/wallet-repository.t
 import { Wallet } from '../../domain/entities/wallet.entity';
 import { WalletId } from '../../domain/value-objects/wallet-id';
 import { Money } from '../../domain/value-objects/money';
+import { UserId } from '../../../user/domain/value-objects/user-id';
+import { User } from 'src/user/domain/entities/user/user.entity';
 
 export class DepositUseCase {
   constructor(
     // Inyectamos el repositorio por contrato (no conocemos la implementación)
     @Inject(WALLET_REPOSITORY)
     private readonly walletRepository: WalletRepository,
+    
   ) {}
 
   /**
@@ -23,7 +26,7 @@ export class DepositUseCase {
    *
    * NO valida montos (eso es responsabilidad del dominio).
    */
-  async execute(walletId: string, amount: Money): Promise<Wallet> {
+  async execute(walletId: string, userId: string, amount: Money): Promise<Wallet> {
     // Convertimos el string en un Value Object de identidad
     // (no crea una wallet, solo encapsula y valida el ID)
     const wallet = await this.walletRepository.findById(
@@ -41,7 +44,8 @@ export class DepositUseCase {
     wallet.deposit(amount);
 
     // Persistimos el nuevo estado de la wallet
-    await this.walletRepository.save(wallet);
+    await this.walletRepository.save(wallet,UserId.create(userId));
+
 
     // Retornamos la entidad actualizada
     return wallet;

@@ -1,21 +1,15 @@
-// src/wallet/infrastructure/controllers/wallet.controller.ts
-import { Body, Controller, Patch, Post } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 
 import { CreateWalletUseCase } from '../../application/use-cases/create-wallet.use-case';
-import { WalletType } from '../../domain/value-objects/wallet-type';
-import { Currency } from '../../domain/value-objects/currency';
 import { Money } from '../../domain/value-objects/money';
+import { Currency } from '../../domain/value-objects/currency';
+import { WalletType } from '../../domain/value-objects/wallet-type';
 
-
-type CreateWalletRequest = {
+type CreateWalletDto = {
   id: string;
   currency: string;
   initialBalance?: number;
-
-  // opcional
   type?: WalletType;
-
-  // solo TEEN
   parentWalletId?: string;
   perTransactionLimit?: number;
 };
@@ -27,25 +21,30 @@ export class WalletController {
   ) {}
 
   @Post()
-  async create(@Body() body: CreateWalletRequest) {
-    const wallet = await this.createWalletUseCase.execute({
+  async create(@Body() body: CreateWalletDto) {
+    /**
+     * TODO:
+     * - Cuando implementemos Auth/JWT, el userId va a venir del token:
+     *   req.user.id
+     *
+     * Por ahora usamos un placeholder explícito para no forzar el diseño.
+     */
+    const userId = 'TEMP_USER_ID';
+
+    return this.createWalletUseCase.execute({
+      userId,
       id: body.id,
       currency: Currency.create(body.currency),
-      initialBalance: body.initialBalance ? new Money(body.initialBalance) : undefined,
+      initialBalance:
+        body.initialBalance !== undefined
+          ? new Money(body.initialBalance)
+          : undefined,
       type: body.type,
       parentWalletId: body.parentWalletId,
-      perTransactionLimit: body.perTransactionLimit ? new Money(body.perTransactionLimit) : undefined,
+      perTransactionLimit:
+        body.perTransactionLimit !== undefined
+          ? new Money(body.perTransactionLimit)
+          : undefined,
     });
-
-    // Respuesta HTTP (no devolvemos reglas internas)
-    return {
-      id: wallet.getId(),
-      type: wallet.getType(),
-      balance: wallet.getBalance(),
-      currency: wallet.getCurrency(),
-    };
-
-
-
-  } 
+  }
 }

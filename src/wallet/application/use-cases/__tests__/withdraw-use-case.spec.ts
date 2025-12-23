@@ -39,7 +39,7 @@ describe('WithdrawUseCase', () => {
         parentWalletId: WalletId.generate().value,
       },
     });
-    await walletRepository.save(wallet);
+    await walletRepository.save(wallet, user.getId());
 
     const result = await useCase.execute(
       user.getId().value,
@@ -75,7 +75,7 @@ describe('WithdrawUseCase', () => {
         parentWalletId: WalletId.generate().value,
       },
     });
-    await walletRepository.save(wallet);
+    await walletRepository.save(wallet, user.getId());
 
     const result = await useCase.execute(
       user.getId().value,
@@ -108,7 +108,7 @@ describe('WithdrawUseCase', () => {
       initialBalance: new Money(100),
       type: WalletType.STANDARD,
     });
-    await walletRepository.save(wallet);
+    await walletRepository.save(wallet, user.getId());
 
     const result = await useCase.execute(
       user.getId().value,

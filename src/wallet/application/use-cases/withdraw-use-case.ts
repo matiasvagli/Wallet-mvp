@@ -40,7 +40,7 @@ export class WithdrawUseCase extends BaseWalletUseCase {
 
     
     wallet.withdraw(amount);
-    await this.walletRepository.save(wallet);
+    await this.walletRepository.save(wallet,UserId.create(userId));
 
     //  trigger lazy
     wallet = await this.maybeAutoUpgrade(wallet, user);

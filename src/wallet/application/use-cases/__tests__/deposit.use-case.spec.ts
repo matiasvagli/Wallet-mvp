@@ -3,8 +3,11 @@ import { InMemoryWalletRepository } from '../../../infrastructure/persistence/in
 import { Wallet } from '../../../domain/entities/wallet.entity';
 import { Money } from '../../../domain/value-objects/money';
 import { Currency } from '../../../domain/value-objects/currency';
+import { WalletId } from '../../../domain/value-objects/wallet-id';
+import { UserId } from '../../../../user/domain/value-objects/user-id';
 
 const UUID_WALLET = '550e8400-e29b-41d4-a716-446655440030';
+const USER_ID = '550e8400-e29b-41d4-a716-446655440001';
 const ARS = Currency.create('ARS');
 
 describe('DepositUseCase', () => {
@@ -15,15 +18,15 @@ describe('DepositUseCase', () => {
     // First, create and store a wallet
     const initialBalance = new Money(100);
     const wallet = new Wallet({ id: UUID_WALLET, currency: ARS, initialBalance });
-    await walletRepository.save(wallet);
+    await walletRepository.save(wallet, UserId.create(USER_ID));
 
     // Now, deposit an amount
     const depositAmount = new Money(50);
-    const updatedWallet = await depositUseCase.execute(UUID_WALLET, depositAmount);
+    const updatedWallet = await depositUseCase.execute(UUID_WALLET, USER_ID, depositAmount);
 
     expect(updatedWallet.getBalance().value).toBe(initialBalance.value + depositAmount.value);
 
-    const storedWallet = await walletRepository.findById(UUID_WALLET);
+    const storedWallet = await walletRepository.findById(WalletId.create(UUID_WALLET));
     expect(storedWallet?.getBalance().value).toBe(initialBalance.value + depositAmount.value);
   });
 });
@@ -35,7 +38,7 @@ describe('DepositUseCase with non-existing wallet', () => {
 
     const nonExistingUUID = '550e8400-e29b-41d4-a716-446655440078';
     await expect(
-      depositUseCase.execute(nonExistingUUID, new Money(50)),
+      depositUseCase.execute(nonExistingUUID, USER_ID, new Money(50)),
     ).rejects.toThrow('Wallet not found');
   });
 });

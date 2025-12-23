@@ -7,8 +7,10 @@ import type { WalletRepository } from '../../domain/repositories/wallet.reposito
 import { WalletId } from '../../domain/value-objects/wallet-id';
 import { Money } from '../../domain/value-objects/money';
 import { Currency } from 'src/wallet/domain/value-objects/currency';
+import { UserId } from '../../../user/domain/value-objects/user-id';
 
 type CreateWalletInput = {
+  userId: string;
   id: string;
   currency: Currency;
   initialBalance?: Money;
@@ -48,6 +50,7 @@ export class CreateWalletUseCase {
    */
   async execute(input: CreateWalletInput): Promise<Wallet> {
     const {
+      userId,
       id,
       currency,
       initialBalance,
@@ -79,7 +82,7 @@ export class CreateWalletUseCase {
     });
 
     // Persist the new wallet
-    await this.walletRepository.save(wallet);
+    await this.walletRepository.save(wallet, UserId.create(userId));
 
     // Return the created entity
     return wallet;
